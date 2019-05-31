@@ -1,3 +1,4 @@
+const passport = require('passport')
 const router = require('express').Router()
 const User = require('../models/user')
 
@@ -8,12 +9,5 @@ router.post('/register', async (req, res) => {
     password: req.body.password
   })
 
-  try {
-    const savedUser = await user.save()
-    res.send(savedUser)
-  } catch (error) {
-    res.status(400).send(error)
-  }
-})
 
 module.exports = router

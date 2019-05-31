@@ -1,26 +1,24 @@
 const express = require('express')
-const app = express()
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
 const bodyParser = require('body-parser')
+const Authentication = require('./middlewares/auth')
 
-// import routes
-const sitesRoute = require('./routes/sites')
-const authRoute = require('./routes/auth')
+const app = express()
 
 dotenv.config()
 
-// Middlewares
+
+// Root Level Middlewares
+Authentication.set(app)
 app.use(bodyParser.json())
 
+
 // Route Middlewares
-app.use('/sites', sitesRoute)
-app.use('/auth', authRoute)
+// app.use('/sites', sitesRoute)
 
-mongoose.connect(
-  process.env.DB_CONNECTION,
-  { useNewUrlParser: true },
-  () => {console.log('connected to DB')}
-)
+mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true }, () => {
+  console.log('connected to DB')
+  app.listen('8080')
+})
 
-app.listen('8080')
