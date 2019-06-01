@@ -1,7 +1,6 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
-const bodyParser = require('body-parser')
 
 const Authentication = require('./middlewares/auth')
 const sitesRoute = require('./routes/sites')
@@ -13,7 +12,7 @@ dotenv.config()
 
 // Root Level Middlewares
 Authentication.set(app)
-app.use(bodyParser.json())
+app.use(express.json())
 
 // Routes
 app.use('/sites', sitesRoute)

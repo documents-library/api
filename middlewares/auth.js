@@ -15,8 +15,15 @@ module.exports = {
       if (user === null) {
         user = new User({
           googleID: profile.id,
-          name: profile.displayName,
-          email: profile.emails[0].value,
+          displayName: profile.displayName || profile.name.givenName,
+          name: {
+            lastName: profile.name.familyName,
+            firstName: profile.name.givenName
+          },
+          email: validEmail(profile),
+          photo: {
+            original: profile.photos.length ? profile.photos[0].value : null,
+          }
         })
 
         await user.save()
@@ -27,7 +34,7 @@ module.exports = {
 
     passport.serializeUser((user, done) => done(null, user))
     passport.deserializeUser((user, done) => done(null, user))
-    
+
     app.use(passport.initialize())
     app.get('/auth/google',
       passport.authenticate('google', { scope: ['profile', 'email'] })
@@ -41,3 +48,14 @@ module.exports = {
     )
   }
 }
+
+function validEmail (profile) {
+  const emails = profile.emails.filter(e => e.verified == true)
+
+  if(emails.length) {
+    return emails[0].value
+  } else {
+    return profile.emails[0].value
+  }
+}
+
