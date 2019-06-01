@@ -1,6 +1,7 @@
 const express = require('express')
 const router = express.Router()
 const Site = require('../models/site')
+const googleDrive = require('../controllers/googleDrive')
 
 // Get sites
 router.get('/', async (req, res) => {
@@ -16,17 +17,21 @@ router.get('/', async (req, res) => {
 router.get('/:siteId', async (req, res) => {
   try {
     const site = await Site.findById(req.params.siteId)
-    res.json(site)
+
+    res.json({ site })
   } catch (error) {
     res.json({ message: error })
   }
 })
 
 // Create a site
+// TODO: validate user logged in
 router.post('/', async (req, res) => {
   const site = new Site({
     title: req.body.title,
-    description: req.body.description
+    description: req.body.description,
+    owner: req.body.owner, // TODO get current logued in user
+    googleFolderId: req.body.googleFolderId
   })
 
   try {
@@ -38,6 +43,7 @@ router.post('/', async (req, res) => {
 })
 
 // Update a site
+// TODO: user is owner of the site
 router.patch('/:siteId', async (req, res) => {
   try {
     const updatedSite = await Site.updateOne(
@@ -54,6 +60,7 @@ router.patch('/:siteId', async (req, res) => {
 })
 
 // Delete a site
+// TODO: user is owner of the site
 router.delete('/:siteId', async (req, res) => {
   try {
     const removedSite = await Site.deleteOne({ _id: req.params.siteId })
