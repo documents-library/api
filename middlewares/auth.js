@@ -1,14 +1,18 @@
-const passport = require('passport')
-const User = require('../models/user')
 const router = require('express').Router()
+const passport = require('passport')
 const GoogleStrategy = require('passport-google-oauth20')
+const jwt = require('jsonwebtoken')
+
+const User = require('../models/user')
+
+const CALLBACK_URL_DEV = 'http://localhost:8080/auth/google/callback'
 
 module.exports = {
   set(app) {
     passport.use(new GoogleStrategy({
       clientID: process.env.GOOGLE_CLIENT_ID,
       clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-      callbackURL: 'http://localhost:8080/auth/google/callback'
+      callbackURL: CALLBACK_URL_DEV
     }, async (accessToken, refreshToken, profile, cb) => {
       let user = await User.findOne({ googleID: profile.id })
 
@@ -43,7 +47,8 @@ module.exports = {
     app.get('/auth/google/callback',
       passport.authenticate('google', { failureRedirect: '/login' }),
       (req, res) => {
-        res.redirect('/')
+        const token = jwt.sign({ _id: req.user._id }, process.env.TOKEN_SECRET)
+        res.header('auth-token', token).send({...req.user, token})
       }
     )
   }
