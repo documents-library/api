@@ -1,18 +1,24 @@
 const express = require('express')
 const router = express.Router()
-const Site = require('../models/site')
-const googleDrive = require('../controllers/googleDrive')
-const verifyToken = require('../middlewares/verifyToken')
 
-// PUBLIC routes
+const Site = require('../models/site')
+const User = require('../models/user')
+const verifyToken = require('../middlewares/verifyToken')
+const { getFolderPermissions, changeFolderPermissions } = require('../controllers/googleDrive')
+const GoogleTokens = require('../models/googleTokens')
+
+/*******************************************************************************
+ * PUBLIC routes
+ ******************************************************************************/
+
 // Get sites
 // TODO: add filter by owner
 router.get('/', async (req, res) => {
   try {
     const sites = await Site.find()
-    res.json(sites)
+    res.status(200).json(sites)
   } catch (error) {
-    res.json({ message: error })
+    res.status(404).json(error)
   }
 })
 
@@ -21,27 +27,51 @@ router.get('/:siteId', async (req, res) => {
   try {
     const site = await Site.findById(req.params.siteId)
 
-    res.json({ site })
+    res.status(200).json({ site })
   } catch (error) {
-    res.json({ message: error })
+    res.status(404).json(error)
   }
 })
 
-// PRIVATE Routes
+/*******************************************************************************
+ * PRIVATE Routes
+ ******************************************************************************/
+
 // Create a site
 router.post('/', verifyToken.private, async (req, res) => {
+  const { title, description, googleFolderId }  = req.body
   const site = new Site({
-    title: req.body.title,
-    description: req.body.description,
+    title,
+    description,
     owner: req.user._id,
-    googleFolderId: req.body.googleFolderId
+    googleFolderId
   })
 
   try {
-    const savedSite = await site.save()
-    res.json(savedSite)
+    const user = await User.findById(req.user._id)
+    const googleTokens = await GoogleTokens.findOne({ googleID: user.googleID })
+    const folderPermissions = await getFolderPermissions({
+      googleFolderId,
+      googleToken: googleTokens.accessToken
+    })
+    const isPublicFolder = await folderPermissions.permissions[0].role == 'reader'
+
+    if (isPublicFolder) {
+      const savedSite = await site.save()
+      res.status(200).json(savedSite)
+    } else {
+      const makePublicFolder = await changeFolderPermissions({
+        googleFolderId,
+        googleToken: googleTokens.accessToken
+      })
+
+      if (makePublicFolder) {
+        const savedSite = await site.save()
+        res.status(200).json(savedSite)
+      } else res.status(401).json({ message: 'Cant make the folder public' })
+    }
   } catch(error) {
-    res.json({ message: error })
+    res.status(401).json(error)
   }
 })
 
@@ -61,14 +91,13 @@ router.patch('/:siteId', verifyToken.private, async (req, res) => {
         googleFolderId: req.body.googleFolderId
       }}
     )
-    res.json(updatedSite)
+    res.status(200).json(updatedSite)
   } catch(error) {
-    res.json({ message: error })
+    res.status(401).json(error)
   }
 })
 
 // Delete a site
-// TODO: user is owner of the site
 router.delete('/:siteId', verifyToken.private, async (req, res) => {
   const site = await Site.findOne({ _id: req.params.siteId })
 
@@ -77,9 +106,9 @@ router.delete('/:siteId', verifyToken.private, async (req, res) => {
 
   try {
     const removedSite = await Site.deleteOne({ _id: req.params.siteId })
-    res.json(removedSite)
+    res.status(200).json(removedSite)
   } catch(error) {
-    res.json({ message: error })
+    res.status(404).json(error)
   }
 })
 

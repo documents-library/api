@@ -4,6 +4,7 @@ const GoogleStrategy = require('passport-google-oauth20')
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
+const GoogleTokens = require('../models/googleTokens')
 
 const CALLBACK_URL_DEV = 'http://localhost:8080/auth/google/callback'
 
@@ -15,8 +16,9 @@ module.exports = {
       callbackURL: CALLBACK_URL_DEV
     }, async (accessToken, refreshToken, profile, cb) => {
       let user = await User.findOne({ googleID: profile.id })
+      let googleTokens = await GoogleTokens.findOne({ googleID: profile.id })
 
-      if (user === null) {
+      if (!user) {
         user = new User({
           googleID: profile.id,
           displayName: profile.displayName || profile.name.givenName,
@@ -33,6 +35,22 @@ module.exports = {
         await user.save()
       }
 
+      // Save google tokens on a new model to ask only on private endpoints
+      if (!googleTokens) {
+        googleTokens = new GoogleTokens({
+          googleID: profile.id,
+          accessToken,
+          refreshToken
+        })
+
+        await googleTokens.save()
+      } else {
+        await GoogleTokens.updateOne({
+          accessToken,
+          refreshToken
+        })
+      }
+
       cb(null, user.toObject())
     }))
 
@@ -41,7 +59,9 @@ module.exports = {
 
     app.use(passport.initialize())
     app.get('/auth/google',
-      passport.authenticate('google', { scope: ['profile', 'email'] })
+      passport.authenticate('google', {
+        scope: ['profile', 'email', 'https://www.googleapis.com/auth/drive']
+      })
     )
 
     app.get('/auth/google/callback',
