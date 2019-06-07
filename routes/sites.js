@@ -4,8 +4,9 @@ const router = express.Router()
 const Site = require('../models/site')
 const User = require('../models/user')
 const verifyToken = require('../middlewares/verifyToken')
-const { getFolderPermissions, changeFolderPermissions } = require('../controllers/googleDrive')
+const { getFolderPermissions, changeFolderPermissions, createFolder, getFolder } = require('../controllers/googleDrive')
 const GoogleTokens = require('../models/googleTokens')
+const getAppFoler = require('../controllers/appFolder')
 
 /*******************************************************************************
  * PUBLIC routes
@@ -16,6 +17,7 @@ const GoogleTokens = require('../models/googleTokens')
 router.get('/', async (req, res) => {
   try {
     const sites = await Site.find()
+
     res.status(200).json(sites)
   } catch (error) {
     res.status(404).json(error)
@@ -39,39 +41,32 @@ router.get('/:siteId', async (req, res) => {
 
 // Create a site
 router.post('/', verifyToken.private, async (req, res) => {
-  const { title, description, googleFolderId }  = req.body
-  const site = new Site({
-    title,
-    description,
-    owner: req.user._id,
-    googleFolderId
-  })
+  const { title, description }  = req.body
 
   try {
     const user = await User.findById(req.user._id)
     const googleTokens = await GoogleTokens.findOne({ googleID: user.googleID })
-    const folderPermissions = await getFolderPermissions({
-      googleFolderId,
+    const appFolder = await getAppFoler({ user, googleTokens })
+    const siteFolder = await createFolder({
+      googleToken: googleTokens.accessToken,
+      name: title,
+      parents: [appFolder]
+    })
+    const makePublicFolder = await changeFolderPermissions({
+      googleFolderId: siteFolder.id,
       googleToken: googleTokens.accessToken
     })
-    const isPublicFolder = await folderPermissions.permissions[0].role == 'reader'
+    const site = new Site({
+      title,
+      description,
+      owner: req.user._id,
+      googleFolderId: siteFolder.id
+    })
 
-    if (isPublicFolder) {
-      const savedSite = await site.save()
-      res.status(200).json(savedSite)
-    } else {
-      const makePublicFolder = await changeFolderPermissions({
-        googleFolderId,
-        googleToken: googleTokens.accessToken
-      })
-
-      if (makePublicFolder) {
-        const savedSite = await site.save()
-        res.status(200).json(savedSite)
-      } else res.status(401).json({ message: 'Cant make the folder public' })
-    }
+    const savedSite = await site.save()
+    res.status(200).json(savedSite)
   } catch(error) {
-    res.status(401).json(error)
+    res.status(401).json(error.message || 'Can\'t create a site')
   }
 })
 

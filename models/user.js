@@ -30,6 +30,9 @@ const UserSchema = mongoose.Schema({
       required: false
     }
   },
+  appFolder: {
+    type: String
+  }
 }, { timestamps: true, virtuals: true })
 
 // Avatar size 90px

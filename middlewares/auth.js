@@ -60,7 +60,11 @@ module.exports = {
     app.use(passport.initialize())
     app.get('/auth/google',
       passport.authenticate('google', {
-        scope: ['profile', 'email', 'https://www.googleapis.com/auth/drive']
+        scope: [
+          'profile',
+          'email',
+          'https://www.googleapis.com/auth/drive.file'
+        ]
       })
     )
 

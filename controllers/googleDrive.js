@@ -12,7 +12,7 @@ async function getFolder({ googleFolderId }) {
       }&fields=*`
     )
 
-    return handleFetchErrors(folder)
+    return await handleFetchErrors(folder)
   } catch (error) {
     throw new Error(error)
   }
@@ -35,15 +35,26 @@ async function getFolderPermissions({ googleFolderId, googleToken }) {
 }
 
 /**
+ * changeFolderPermissions
  * role:  owner, organizer, fileOrganizer, writer, commenter, reader
  * type: user, group, domain, anyone
- * to be public folder -> body: { role: reader, type: anyone }
+ * allowFileDiscovery: boolean
+ * DEFAULT: public, not discoverable -> body: {
+ *  role: reader, type: anyone, allowFileDiscovery: false
+ * }
  **/
-async function changeFolderPermissions({ googleFolderId, googleToken, role = 'reader', type = 'anyone' }) {
+
+async function changeFolderPermissions({
+  googleFolderId,
+  googleToken,
+  role = 'reader',
+  type = 'anyone',
+  allowFileDiscovery = false
+}) {
   try {
     const folderPermissions = await fetch(`${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`, {
       "method": "POST",
-      "body": JSON.stringify({ "role": "reader", "type": "anyone" }),
+      "body": JSON.stringify({ role, type, allowFileDiscovery }),
       "headers": {
         "Content-Type": "application/json",
         "Authorization": `Bearer ${googleToken}`
@@ -56,12 +67,41 @@ async function changeFolderPermissions({ googleFolderId, googleToken, role = 're
   }
 }
 
+async function createFolder ({ googleToken, name = 'Unnamed folder', parents = [], folderColorRgb = null }) {
+  try {
+    const folder = await fetch(`${GOOGLE_API_V3_BASE_PATH}/files`, {
+      "method": "POST",
+      "body": JSON.stringify({
+        name,
+        parents,
+        folderColorRgb,
+        "kind": "drive#file",
+        "mimeType": "application/vnd.google-apps.folder",
+      }),
+      "headers": {
+        "Content-Type": "application/json",
+        "Authorization": `Bearer ${googleToken}`
+      }
+    })
+
+    return handleFetchErrors(folder)
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
 async function handleFetchErrors(response) {
   const res = await response
   if (!response.ok) {
-      throw new Error(response.statusText);
+    throw new Error(response.statusText)
+  } else {
+    return response.json()
   }
-  return response.json()
 }
 
-module.exports = { getFolder, getFolderPermissions, changeFolderPermissions }
+module.exports = {
+  getFolder,
+  getFolderPermissions,
+  changeFolderPermissions,
+  createFolder
+}
