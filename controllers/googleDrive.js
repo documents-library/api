@@ -1,16 +1,48 @@
 const { fetchWrapper, handleFetchErrors } = require('../helpers/fetch')
 
 const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
+const fileItemData = [
+  'createdTime',
+  'explicitlyTrashed',
+  'fileExtension',
+  'iconLink',
+  'id',
+  'kind',
+  'mimeType',
+  'modifiedTime',
+  'name',
+  'size',
+  'starred',
+  'thumbnailLink',
+  'trashed',
+  'webContentLink',
+  'webViewLink'
+]
 
-async function getFolder({ googleFolderId, pageToken }) {
+async function getFolder({
+  googleFolderId,
+  orderBy = 'folder,starred,name',
+  pageSize = 50,
+  pageToken,
+  search
+}) {
+  let query = `'${googleFolderId}' in parents`
+  // TODO do search in sub-folders
+  if (search) {
+    orderBy = null
+    query = `'${googleFolderId}' in parents and fullText contains '${search}'`
+  }
+
   try {
     const folder = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       params: {
-        q: `'${googleFolderId}' in parents`,
+        q: query,
         fields: '*',
-        pageSize: 10,
         pageToken,
+        pageSize,
+        orderBy,
+        fields: `kind, nextPageToken, files(${fileItemData.toString()})`,
         key: process.env.GOOGLE_API_KEY
       }
     })
@@ -76,7 +108,12 @@ async function changeFolderPermissions({
   }
 }
 
-async function createFolder ({ googleToken, name = 'Unnamed folder', parents = [], folderColorRgb = null }) {
+async function createFolder ({
+  googleToken,
+  name = 'Unnamed folder',
+  parents = [],
+  folderColorRgb = null
+}) {
   try {
     const folder = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,

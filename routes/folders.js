@@ -6,7 +6,10 @@ router.get('/:googleFolderId', async (req, res) => {
   try {
     const folder = await googleDrive.getFolder({
       googleFolderId: req.params.googleFolderId,
-      pageToken: req.query.pageToken
+      orderBy: req.query.orderBy,
+      pageSize: req.query.pageSize,
+      pageToken: req.query.pageToken,
+      search: req.query.search
     })
 
     res.status(200).send(folder)
