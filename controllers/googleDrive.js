@@ -1,16 +1,19 @@
-const fetch = require('isomorphic-unfetch')
+const { fetchWrapper, handleFetchErrors } = require('../helpers/fetch')
 
 const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
 
-async function getFolder({ googleFolderId }) {
+async function getFolder({ googleFolderId, pageToken }) {
   try {
-    const folder = await fetch(
-      `${GOOGLE_API_V3_BASE_PATH}/files?q='${
-        googleFolderId
-      }'+in+parents&key=${
-        process.env.GOOGLE_API_KEY
-      }&fields=*`
-    )
+    const folder = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files`,
+      params: {
+        q: `'${googleFolderId}' in parents`,
+        fields: '*',
+        pageSize: 10,
+        pageToken,
+        key: process.env.GOOGLE_API_KEY
+      }
+    })
 
     return await handleFetchErrors(folder)
   } catch (error) {
@@ -20,11 +23,14 @@ async function getFolder({ googleFolderId }) {
 
 async function getFolderPermissions({ googleFolderId, googleToken }) {
   try {
-    const folderPermissions = await fetch(`${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`, {
-      "method": "GET",
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${googleToken}`,
+    const folderPermissions = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
+      headers: {
+        "method": "GET",
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${googleToken}`,
+        }
       }
     })
 
@@ -52,12 +58,15 @@ async function changeFolderPermissions({
   allowFileDiscovery = false
 }) {
   try {
-    const folderPermissions = await fetch(`${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`, {
-      "method": "POST",
-      "body": JSON.stringify({ role, type, allowFileDiscovery }),
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${googleToken}`
+    const folderPermissions = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
+      headers: {
+        "method": "POST",
+        "body": JSON.stringify({ role, type, allowFileDiscovery }),
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${googleToken}`
+        }
       }
     })
 
@@ -69,33 +78,27 @@ async function changeFolderPermissions({
 
 async function createFolder ({ googleToken, name = 'Unnamed folder', parents = [], folderColorRgb = null }) {
   try {
-    const folder = await fetch(`${GOOGLE_API_V3_BASE_PATH}/files`, {
-      "method": "POST",
-      "body": JSON.stringify({
-        name,
-        parents,
-        folderColorRgb,
-        "kind": "drive#file",
-        "mimeType": "application/vnd.google-apps.folder",
-      }),
-      "headers": {
-        "Content-Type": "application/json",
-        "Authorization": `Bearer ${googleToken}`
+    const folder = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files`,
+      headers: {
+        "method": "POST",
+        "body": JSON.stringify({
+          name,
+          parents,
+          folderColorRgb,
+          "kind": "drive#file",
+          "mimeType": "application/vnd.google-apps.folder",
+        }),
+        "headers": {
+          "Content-Type": "application/json",
+          "Authorization": `Bearer ${googleToken}`
+        }
       }
     })
 
     return handleFetchErrors(folder)
   } catch (error) {
     throw new Error(error)
-  }
-}
-
-async function handleFetchErrors(response) {
-  const res = await response
-  if (!response.ok) {
-    throw new Error(response.statusText)
-  } else {
-    return response.json()
   }
 }
 
