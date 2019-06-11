@@ -16,4 +16,3 @@ const GoogleTokens = mongoose.Schema({
 }, { timestamps: true })
 
 module.exports = mongoose.model('GoogleTokens', GoogleTokens)
-

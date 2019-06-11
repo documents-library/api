@@ -1,6 +1,6 @@
 const jwt = require('jsonwebtoken')
 
-function private(req, res, next) {
+function privateUser (req, res, next) {
   const token = req.header('auth-token')
 
   if (!token) return res.status(401).send('Access denied')
@@ -14,7 +14,7 @@ function private(req, res, next) {
   }
 }
 
-function getUser(req, res, next) {
+function getUser (req, res, next) {
   const token = req.header('auth-token')
   let user = null
 
@@ -31,6 +31,6 @@ function getUser(req, res, next) {
 }
 
 module.exports = {
-  private,
+  privateUser,
   getUser
 }

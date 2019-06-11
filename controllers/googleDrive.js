@@ -19,7 +19,7 @@ const fileItemData = [
   'webViewLink'
 ]
 
-async function getFolder({
+async function getFolder ({
   googleFolderId,
   orderBy = 'folder,starred,name',
   pageSize = 50,
@@ -38,7 +38,6 @@ async function getFolder({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       params: {
         q: query,
-        fields: '*',
         pageToken,
         pageSize,
         orderBy,
@@ -53,15 +52,15 @@ async function getFolder({
   }
 }
 
-async function getFolderPermissions({ googleFolderId, googleToken }) {
+async function getFolderPermissions ({ googleFolderId, googleToken }) {
   try {
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        "method": "GET",
-        "headers": {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${googleToken}`,
+        'method': 'GET',
+        'headers': {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${googleToken}`
         }
       }
     })
@@ -82,7 +81,7 @@ async function getFolderPermissions({ googleFolderId, googleToken }) {
  * }
  **/
 
-async function changeFolderPermissions({
+async function changeFolderPermissions ({
   googleFolderId,
   googleToken,
   role = 'reader',
@@ -93,11 +92,11 @@ async function changeFolderPermissions({
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        "method": "POST",
-        "body": JSON.stringify({ role, type, allowFileDiscovery }),
-        "headers": {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${googleToken}`
+        'method': 'POST',
+        'body': JSON.stringify({ role, type, allowFileDiscovery }),
+        'headers': {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${googleToken}`
         }
       }
     })
@@ -118,17 +117,17 @@ async function createFolder ({
     const folder = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       headers: {
-        "method": "POST",
-        "body": JSON.stringify({
+        'method': 'POST',
+        'body': JSON.stringify({
           name,
           parents,
           folderColorRgb,
-          "kind": "drive#file",
-          "mimeType": "application/vnd.google-apps.folder",
+          'kind': 'drive#file',
+          'mimeType': 'application/vnd.google-apps.folder'
         }),
-        "headers": {
-          "Content-Type": "application/json",
-          "Authorization": `Bearer ${googleToken}`
+        'headers': {
+          'Content-Type': 'application/json',
+          'Authorization': `Bearer ${googleToken}`
         }
       }
     })
