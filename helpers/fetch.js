@@ -1,4 +1,4 @@
-const url = require('url');
+const URL = require('url').URL
 const fetch = require('isomorphic-unfetch')
 const omitBy = require('lodash/omitBy')
 const isNil = require ('lodash/isNil')

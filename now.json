@@ -1,0 +1,13 @@
+{
+  "version": 2,
+  "name": "@documentslibrary/api",
+  "builds": [{ "src": "./index.js", "use": "@now/node-server@latest" }],
+  "routes": [{ "src": "/(.*)", "dest": "/" }],
+  "env": {
+    "DB_CONNECTION": "@dev-db_connection",
+    "GOOGLE_API_KEY": "@dev-google_api_key",
+    "GOOGLE_CLIENT_ID": "@dev-google_client_id",
+    "GOOGLE_CLIENT_SECRET": "@dev-google_client_secret",
+    "TOKEN_SECRET": "@dev-token_secret"
+  }
+}
