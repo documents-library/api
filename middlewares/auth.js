@@ -6,6 +6,7 @@ const User = require('../models/user')
 const GoogleTokens = require('../models/googleTokens')
 
 const CALLBACK_URL_DEV = 'http://localhost:8080/auth/google/callback'
+// const CALLBACK_URL_PROD = 'https://api.documents.li/auth/google/callback'
 
 module.exports = {
   set (app) {

@@ -30,6 +30,10 @@ function getUser (req, res, next) {
   next()
 }
 
+// TODO check google token
+// https://www.googleapis.com/oauth2/v1/tokeninfo?access_token=accessToken
+
+
 module.exports = {
   privateUser,
   getUser

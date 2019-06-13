@@ -67,7 +67,12 @@ router.post('/', verifyToken.privateUser, async (req, res) => {
     const savedSite = await site.save()
     res.status(200).json(savedSite)
   } catch (error) {
-    res.status(401).json(error.message || 'Can\'t create a site')
+    if (error.message === 'googleRefreshTokenInvalid') {
+      res.status(401).json('Google requires validate user')
+    } else if (error.message === 'insufficientGoogleScopes') {
+      res.status(401).json('Google requires accept all scopes')
+    }
+    res.status(400).json(error.message || 'Can\'t create a site')
   }
 })
 
@@ -90,7 +95,12 @@ router.patch('/:siteId', verifyToken.privateUser, async (req, res) => {
     )
     res.status(200).json(updatedSite)
   } catch (error) {
-    res.status(401).json(error)
+    if (error.message === 'googleRefreshTokenInvalid') {
+      res.status(401).json('Google requires validate user')
+    } else if (error.message === 'insufficientGoogleScopes') {
+      res.status(401).json('Google requires accept all scopes')
+    }
+    res.status(400).json(error.message || 'Can\'t update a site')
   }
 })
 
@@ -106,7 +116,12 @@ router.delete('/:siteId', verifyToken.privateUser, async (req, res) => {
     const removedSite = await Site.deleteOne({ _id: req.params.siteId })
     res.status(200).json(removedSite)
   } catch (error) {
-    res.status(404).json(error)
+    if (error.message === 'googleRefreshTokenInvalid') {
+      res.status(401).json('Google requires validate user')
+    } else if (error.message === 'insufficientGoogleScopes') {
+      res.status(401).json('Google requires accept all scopes')
+    }
+    res.status(400).json(error.message || 'Can\'t delete a site')
   }
 })
 
