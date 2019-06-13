@@ -1,4 +1,4 @@
-const { fetchWrapper, handleFetchErrors } = require('../helpers/fetch')
+const { fetchWrapper, handleFetchResponse } = require('../helpers/fetch')
 
 const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
 const fileItemData = [
@@ -46,7 +46,7 @@ async function getFolder ({
       }
     })
 
-    return await handleFetchErrors(folder)
+    return handleFetchResponse(folder)
   } catch (error) {
     throw new Error(error)
   }
@@ -65,7 +65,7 @@ async function getFolderPermissions ({ googleFolderId, googleToken }) {
       }
     })
 
-    return handleFetchErrors(folderPermissions)
+    return handleFetchResponse(folderPermissions)
   } catch (error) {
     throw new Error(error)
   }
@@ -101,7 +101,7 @@ async function changeFolderPermissions ({
       }
     })
 
-    return handleFetchErrors(folderPermissions)
+    return handleFetchResponse(folderPermissions)
   } catch (error) {
     throw new Error(error)
   }
@@ -132,7 +132,7 @@ async function createFolder ({
       }
     })
 
-    return handleFetchErrors(folder)
+    return handleFetchResponse(folder)
   } catch (error) {
     throw new Error(error)
   }

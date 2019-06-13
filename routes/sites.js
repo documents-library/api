@@ -2,10 +2,8 @@ const express = require('express')
 const router = express.Router()
 
 const Site = require('../models/site')
-const User = require('../models/user')
 const verifyToken = require('../middlewares/verifyToken')
 const { changeFolderPermissions, createFolder } = require('../controllers/googleDrive')
-const GoogleTokens = require('../models/googleTokens')
 const getAppFoler = require('../controllers/appFolder')
 
 /*******************************************************************************
@@ -40,34 +38,36 @@ router.get('/:siteId', async (req, res) => {
  ******************************************************************************/
 
 // Create a site
-router.post('/', verifyToken.privateUser, async (req, res) => {
+router.post('/', [verifyToken.privateUser, verifyToken.google], async (req, res) => {
   const { title, description } = req.body
 
   try {
-    const user = await User.findById(req.user._id)
-    const googleTokens = await GoogleTokens.findOne({ googleID: user.googleID })
-    const appFolder = await getAppFoler({ user, googleTokens })
+    const user = req.user
+    const googleToken = req.googleToken
+    const appFolder = await getAppFoler({ user, googleToken })
     const siteFolder = await createFolder({
-      googleToken: googleTokens.accessToken,
+      googleToken: googleToken,
       name: title,
       parents: [appFolder]
     })
     // make the folder public
     await changeFolderPermissions({
       googleFolderId: siteFolder.id,
-      googleToken: googleTokens.accessToken
+      googleToken
     })
     const site = new Site({
       title,
       description,
-      owner: req.user._id,
+      owner: user._id,
       googleFolderId: siteFolder.id
     })
-
     const savedSite = await site.save()
+
     res.status(200).json(savedSite)
   } catch (error) {
-    res.status(401).json(error.message || 'Can\'t create a site')
+    if (error.message === '403') res.status(401).send('Google user needs accept all scopes')
+    else if (error.message === '401') res.status(401).send('Google user not allowed')
+    else res.status(500).json(error.message || 'Can\'t update a site')
   }
 })
 
@@ -75,7 +75,7 @@ router.post('/', verifyToken.privateUser, async (req, res) => {
 router.patch('/:siteId', verifyToken.privateUser, async (req, res) => {
   const site = await Site.findOne({ _id: req.params.siteId })
 
-  if (site && req.user._id !== site.owner) {
+  if (site && req.userId !== site.owner) {
     return res.status(401).send('You are not allowed to modify the site')
   }
 
@@ -88,9 +88,10 @@ router.patch('/:siteId', verifyToken.privateUser, async (req, res) => {
         googleFolderId: req.body.googleFolderId
       } }
     )
+
     res.status(200).json(updatedSite)
   } catch (error) {
-    res.status(401).json(error)
+    res.status(500).json(error.message || 'Can\'t create a site')
   }
 })
 
@@ -98,15 +99,16 @@ router.patch('/:siteId', verifyToken.privateUser, async (req, res) => {
 router.delete('/:siteId', verifyToken.privateUser, async (req, res) => {
   const site = await Site.findOne({ _id: req.params.siteId })
 
-  if (site && req.user._id !== site.owner) {
+  if (site && req.userId !== site.owner) {
     return res.status(401).send('You are not allowed to delete the site')
   }
 
   try {
     const removedSite = await Site.deleteOne({ _id: req.params.siteId })
+
     res.status(200).json(removedSite)
   } catch (error) {
-    res.status(404).json(error)
+    res.status(500).json(error.message || 'Can\'t delete a site')
   }
 })
 

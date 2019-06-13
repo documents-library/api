@@ -14,14 +14,20 @@ async function fetchWrapper ({ url, params, headers }) {
   return fetch(newUrl.href, headers)
 }
 
-async function handleFetchErrors (response) {
+async function handleFetchResponse (response) {
   const res = await response
 
+  debugger
   if (!res.ok) {
-    throw new Error(response.statusText)
+    let err
+    if (res.status === 401) err = '401'
+    else if (res.status === 403) err = '403'
+    else err = res.statusText
+
+    throw new Error(err)
   } else {
     return response.json()
   }
 }
 
-module.exports = { fetchWrapper, handleFetchErrors }
+module.exports = { fetchWrapper, handleFetchResponse }
