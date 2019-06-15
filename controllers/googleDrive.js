@@ -57,10 +57,10 @@ async function getFolderPermissions ({ googleFolderId, googleToken }) {
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        'method': 'GET',
-        'headers': {
+        method: 'GET',
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${googleToken}`
+          Authorization: `Bearer ${googleToken}`
         }
       }
     })
@@ -92,11 +92,11 @@ async function changeFolderPermissions ({
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        'method': 'POST',
-        'body': JSON.stringify({ role, type, allowFileDiscovery }),
-        'headers': {
+        method: 'POST',
+        body: JSON.stringify({ role, type, allowFileDiscovery }),
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${googleToken}`
+          Authorization: `Bearer ${googleToken}`
         }
       }
     })
@@ -117,17 +117,17 @@ async function createFolder ({
     const folder = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       headers: {
-        'method': 'POST',
-        'body': JSON.stringify({
+        method: 'POST',
+        body: JSON.stringify({
           name,
           parents,
           folderColorRgb,
-          'kind': 'drive#file',
-          'mimeType': 'application/vnd.google-apps.folder'
+          kind: 'drive#file',
+          mimeType: 'application/vnd.google-apps.folder'
         }),
-        'headers': {
+        headers: {
           'Content-Type': 'application/json',
-          'Authorization': `Bearer ${googleToken}`
+          Authorization: `Bearer ${googleToken}`
         }
       }
     })

@@ -1,39 +1,42 @@
 const mongoose = require('mongoose')
 
-const UserSchema = mongoose.Schema({
-  googleID: {
-    type: String,
-    required: true
-  },
-  email: {
-    type: String,
-    required: true,
-    unique: true
-  },
-  name: {
-    lastName: {
+const UserSchema = mongoose.Schema(
+  {
+    googleID: {
       type: String,
       required: true
     },
-    firstName: {
+    email: {
+      type: String,
+      required: true,
+      unique: true
+    },
+    name: {
+      lastName: {
+        type: String,
+        required: true
+      },
+      firstName: {
+        type: String,
+        required: true
+      }
+    },
+    displayName: {
       type: String,
       required: true
+    },
+    photo: {
+      original: {
+        type: String,
+        required: false
+      }
+    },
+    appFolder: {
+      type: String
     }
   },
-  displayName: {
-    type: String,
-    required: true
-  },
-  photo: {
-    original: {
-      type: String,
-      required: false
-    }
-  },
-  appFolder: {
-    type: String
-  }
-}, { timestamps: true, virtuals: true })
+  { timestamps: true, virtuals: true }
+)
 
 // Avatar size 90px
 UserSchema.virtual('photo.avatar').get(function () {

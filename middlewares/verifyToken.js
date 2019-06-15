@@ -62,7 +62,7 @@ async function google (req, res, next) {
           grant_type: 'refresh_token'
         },
         headers: {
-          'method': 'POST'
+          method: 'POST'
         }
       })
 

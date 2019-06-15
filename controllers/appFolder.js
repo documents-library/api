@@ -30,9 +30,11 @@ async function createAppFolder ({ user, googleToken }) {
 
   await User.updateOne(
     { _id: user._id },
-    { $set: {
-      appFolder: appFolder.id
-    } }
+    {
+      $set: {
+        appFolder: appFolder.id
+      }
+    }
   )
 
   return appFolder

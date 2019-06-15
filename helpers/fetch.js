@@ -8,7 +8,9 @@ async function fetchWrapper ({ url, params, headers }) {
 
   if (params) {
     const newParams = omitBy(params, isNil)
-    Object.keys(newParams).forEach(key => newUrl.searchParams.append(key, params[key]))
+    Object.keys(newParams).forEach(key =>
+      newUrl.searchParams.append(key, params[key])
+    )
   }
 
   return fetch(newUrl.href, headers)
@@ -17,7 +19,6 @@ async function fetchWrapper ({ url, params, headers }) {
 async function handleFetchResponse (response) {
   const res = await response
 
-  debugger
   if (!res.ok) {
     let err
     if (res.status === 401) err = '401'
