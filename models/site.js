@@ -2,8 +2,10 @@ const mongoose = require('mongoose')
 
 const SiteSchema = mongoose.Schema(
   {
-    title: {
+    name: {
       type: String,
+      min: 6,
+      max: 140,
       required: true
     },
     description: {

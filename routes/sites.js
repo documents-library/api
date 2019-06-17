@@ -8,6 +8,7 @@ const {
   createFolder
 } = require('../controllers/googleDrive')
 const getAppFoler = require('../controllers/appFolder')
+const { validateSite } = require('../helpers/validations')
 
 /*******************************************************************************
  * PUBLIC routes
@@ -45,31 +46,36 @@ router.post(
   '/',
   [verifyToken.privateUser, verifyToken.google],
   async (req, res) => {
-    const { title, description } = req.body
+    const { name, description } = req.body
 
     try {
-      const user = req.user
-      const googleToken = req.googleToken
-      const appFolder = await getAppFoler({ user, googleToken })
-      const siteFolder = await createFolder({
-        googleToken: googleToken,
-        name: title,
-        parents: [appFolder]
-      })
-      // make the folder public
-      await changeFolderPermissions({
-        googleFolderId: siteFolder.id,
-        googleToken
-      })
-      const site = new Site({
-        title,
-        description,
-        owner: user._id,
-        googleFolderId: siteFolder.id
-      })
-      const savedSite = await site.save()
+      const { error } = await validateSite(req)
+      if (error) {
+        return res.status(409).send(error)
+      } else {
+        const user = req.user
+        const googleToken = req.googleToken
+        const appFolder = await getAppFoler({ user, googleToken })
+        const siteFolder = await createFolder({
+          googleToken: googleToken,
+          name,
+          parents: [appFolder]
+        })
+        // make the folder public
+        await changeFolderPermissions({
+          googleFolderId: siteFolder.id,
+          googleToken
+        })
+        const site = new Site({
+          name,
+          description,
+          owner: user._id,
+          googleFolderId: siteFolder.id
+        })
+        const savedSite = await site.save()
 
-      res.status(200).json(savedSite)
+        res.status(200).json(savedSite)
+      }
     } catch (error) {
       if (error.message === '403') {
         res.status(401).send('Google user needs accept all scopes')
@@ -93,7 +99,7 @@ router.patch('/:siteId', verifyToken.privateUser, async (req, res) => {
       { _id: req.params.siteId },
       {
         $set: {
-          title: req.body.title,
+          name: req.body.name,
           description: req.body.description,
           googleFolderId: req.body.googleFolderId
         }
@@ -120,6 +126,17 @@ router.delete('/:siteId', verifyToken.privateUser, async (req, res) => {
     res.status(200).json(removedSite)
   } catch (error) {
     res.status(500).json(error.message || "Can't delete a site")
+  }
+})
+
+router.post('/validate', verifyToken.privateUser, async (req, res) => {
+  try {
+    const { error } = await validateSite(req)
+    if (error) {
+      return res.status(409).send(error)
+    } else return res.status(200).send('valid site')
+  } catch (error) {
+    res.status(404).json(error)
   }
 })
 
