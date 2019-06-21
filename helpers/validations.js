@@ -13,19 +13,20 @@ async function validateSite (req) {
   const schema = {
     owner: Joi.string().required(),
     name: Joi.string()
-      .regex(/^(?!.*\.\.)(?!.*\.$)[^\W][\w.]{6,140}$/)
+      .regex(/(?!.*[.\-_]{2,})^[a-z0-9.\-_]{3,32}$/)
       .required(),
     description: Joi.string()
   }
   const { error } = Joi.validate(data, schema)
 
   if (error) {
-    return {
-      error: `The name must have less than 140 characters,
-      can contain only numbers, letters and dot,
-       cannot include spaces, cannot start or end with a period
-       or have more than one period sequentially.
-       Max length is 30 chars.`
+    if (error.details[0].type === 'string.regex.base') {
+      return {
+        error: `Sorry, only letters (a-z), numbers (0-9),
+        and symbols (_-.) are allowed, from 3 to 32 charadcters.`
+      }
+    } else {
+      return { error: error.details[0].message }
     }
   }
 
