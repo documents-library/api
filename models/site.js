@@ -1,4 +1,4 @@
-const mongoose = require('mongoose')
+const mongoose = require("mongoose");
 
 const SiteSchema = mongoose.Schema(
   {
@@ -22,6 +22,6 @@ const SiteSchema = mongoose.Schema(
     }
   },
   { timestamps: true }
-)
+);
 
-module.exports = mongoose.model('Sites', SiteSchema)
+module.exports = mongoose.model("Sites", SiteSchema);
