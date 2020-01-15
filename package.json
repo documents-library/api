@@ -12,6 +12,17 @@
   "keywords": [],
   "author": "Gabriel Germán Salas",
   "license": "GPL-2.0-or-later",
+  "husky": {
+    "hooks": {
+      "pre-commit": "lint-staged"
+    }
+  },
+  "lint-staged": {
+    "./src/*.{js,jsx,ts,tsx}": [
+      "npx prettier --write",
+      "eslint src/*.js --fix-dry-run"
+    ]
+  },
   "dependencies": {
     "@hapi/joi": "^15.0.3",
     "dotenv": "^8.0.0",
@@ -33,6 +44,8 @@
     "eslint-plugin-promise": "^4.1.1",
     "eslint-plugin-standard": "^4.0.0",
     "nodemon": "^1.19.0",
-    "prettier": "^1.19.1"
+    "prettier": "^1.19.1",
+    "husky": "^3.1.0",
+    "lint-staged": "^9.5.0"
   }
 }

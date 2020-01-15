@@ -1,41 +1,39 @@
-const { fetchWrapper, handleFetchResponse } = require("../helpers/fetch");
+const { fetchWrapper, handleFetchResponse } = require('../helpers/fetch')
 
-const GOOGLE_API_V3_BASE_PATH = "https://www.googleapis.com/drive/v3";
+const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
 const fileItemData = [
-  "createdTime",
-  "explicitlyTrashed",
-  "fileExtension",
-  "iconLink",
-  "id",
-  "kind",
-  "mimeType",
-  "modifiedTime",
-  "name",
-  "size",
-  "starred",
-  "thumbnailLink",
-  "trashed",
-  "webContentLink",
-  "webViewLink",
-  "parents"
-];
+  'explicitlyTrashed',
+  'fileExtension',
+  'iconLink',
+  'id',
+  'kind',
+  'mimeType',
+  'modifiedTime',
+  'name',
+  'size',
+  'starred',
+  'thumbnailLink',
+  'trashed',
+  'webContentLink'
+]
 
 async function getFolder({
+  googleToken,
   googleFolderId,
-  orderBy = "folder,starred,name",
+  orderBy = 'folder,starred,modifiedTime desc',
   pageSize = 50,
   pageToken,
   search
 }) {
-  let query = `'${googleFolderId}' in parents`;
+  let query = `'${googleFolderId}' in parents`
   // TODO do search in sub-folders
   if (search) {
-    orderBy = null;
-    query = `'${googleFolderId}' in parents and fullText contains '${search}'`;
+    orderBy = null
+    query = `'${googleFolderId}' in parents and fullText contains '${search}'`
   }
 
   try {
-    const folder = await fetchWrapper({
+    const getFiles = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       params: {
         q: query,
@@ -43,13 +41,32 @@ async function getFolder({
         pageSize,
         orderBy,
         fields: `kind, nextPageToken, incompleteSearch, files(${fileItemData.toString()})`,
+        // fields: '*',
         key: process.env.GOOGLE_API_KEY
       }
-    });
+    })
 
-    return handleFetchResponse(folder);
+    const getCurrentFolder = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}`,
+      params: {
+        fields: ['id', 'name', 'parents'],
+        key: process.env.GOOGLE_API_KEY
+      },
+      headers: {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${googleToken}`
+        }
+      }
+    })
+
+    const files = await handleFetchResponse(getFiles)
+    const currentFolder = await handleFetchResponse(getCurrentFolder)
+
+    return { ...files, currentFolder }
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 
@@ -58,17 +75,17 @@ async function getFolderPermissions({ googleFolderId, googleToken }) {
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        method: "GET",
+        method: 'GET',
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${googleToken}`
         }
       }
-    });
+    })
 
-    return handleFetchResponse(folderPermissions);
+    return handleFetchResponse(folderPermissions)
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 
@@ -85,32 +102,32 @@ async function getFolderPermissions({ googleFolderId, googleToken }) {
 async function changeFolderPermissions({
   googleFolderId,
   googleToken,
-  role = "reader",
-  type = "anyone",
+  role = 'reader',
+  type = 'anyone',
   allowFileDiscovery = false
 }) {
   try {
     const folderPermissions = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFolderId}/permissions`,
       headers: {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({ role, type, allowFileDiscovery }),
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${googleToken}`
         }
       }
-    });
+    })
 
-    return handleFetchResponse(folderPermissions);
+    return handleFetchResponse(folderPermissions)
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 
 async function createFolder({
   googleToken,
-  name = "Unnamed folder",
+  name = 'Unnamed folder',
   parents = [],
   folderColorRgb = null
 }) {
@@ -118,24 +135,24 @@ async function createFolder({
     const folder = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files`,
       headers: {
-        method: "POST",
+        method: 'POST',
         body: JSON.stringify({
           name,
           parents,
           folderColorRgb,
-          kind: "drive#file",
-          mimeType: "application/vnd.google-apps.folder"
+          kind: 'drive#file',
+          mimeType: 'application/vnd.google-apps.folder'
         }),
         headers: {
-          "Content-Type": "application/json",
+          'Content-Type': 'application/json',
           Authorization: `Bearer ${googleToken}`
         }
       }
-    });
+    })
 
-    return handleFetchResponse(folder);
+    return handleFetchResponse(folder)
   } catch (error) {
-    throw new Error(error);
+    throw new Error(error)
   }
 }
 
@@ -144,4 +161,4 @@ module.exports = {
   getFolderPermissions,
   changeFolderPermissions,
   createFolder
-};
+}

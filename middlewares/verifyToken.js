@@ -1,13 +1,14 @@
 const jwt = require('jsonwebtoken')
 
 const User = require('../models/user')
+const Site = require('../models/site')
 const GoogleTokens = require('../models/googleTokens')
 const { fetchWrapper } = require('../helpers/fetch')
 
 const GOOGLE_AUTHORIZATION_SERVER = 'https://www.googleapis.com/oauth2/v4/token'
 const GOOGLE_TOKENINFO = 'https://www.googleapis.com/oauth2/v1/tokeninfo'
 
-function privateUser (req, res, next) {
+function privateUser(req, res, next) {
   const token = req.header('auth-token')
 
   if (!token) return res.status(401).send('Access denied')
@@ -21,7 +22,7 @@ function privateUser (req, res, next) {
   }
 }
 
-function getUser (req, res, next) {
+function getUser(req, res, next) {
   const token = req.header('auth-token')
   let userVerified = null
 
@@ -37,9 +38,22 @@ function getUser (req, res, next) {
   next()
 }
 
+async function getUserFromData({ userId, params }) {
+  let user = null
+
+  if (userId) {
+    user = await User.findById(userId)
+  } else if (params.siteName) {
+    const site = await Site.findOne({ name: params.siteName })
+    user = await User.findById(site.owner)
+  }
+
+  return user
+}
+
 // TODO check google token
-async function google (req, res, next) {
-  const user = await User.findById(req.userId)
+async function google(req, res, next) {
+  const user = await getUserFromData(req)
   const googleTokens = await GoogleTokens.findOne({ googleID: user.googleID })
 
   try {

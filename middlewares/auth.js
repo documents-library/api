@@ -9,7 +9,7 @@ const CALLBACK_URL_DEV = 'http://localhost:8080/auth/google/callback'
 // const CALLBACK_URL_PROD = 'https://api.documents.li/auth/google/callback'
 
 module.exports = {
-  set (app) {
+  set(app) {
     passport.use(
       new GoogleStrategy(
         {
@@ -71,7 +71,8 @@ module.exports = {
         scope: [
           'profile',
           'email',
-          'https://www.googleapis.com/auth/drive.file'
+          'https://www.googleapis.com/auth/drive.file',
+          'https://www.googleapis.com/auth/drive.metadata.readonly'
         ]
       })
     )
@@ -87,7 +88,7 @@ module.exports = {
   }
 }
 
-function validEmail (profile) {
+function validEmail(profile) {
   const emails = profile.emails.filter(e => e.verified === true)
 
   if (emails.length) {
