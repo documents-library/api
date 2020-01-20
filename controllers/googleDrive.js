@@ -1,4 +1,9 @@
 const { fetchWrapper, handleFetchResponse } = require('../helpers/fetch')
+const {
+  isFileType,
+  fileCanBeExportedToHtml,
+  sanitizeFile
+} = require('../helpers/files')
 
 const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
 const fileItemData = [
@@ -14,7 +19,8 @@ const fileItemData = [
   'starred',
   'thumbnailLink',
   'trashed',
-  'webContentLink'
+  'webContentLink',
+  'exportLinks'
 ]
 
 async function getFolder({
@@ -65,6 +71,45 @@ async function getFolder({
     const currentFolder = await handleFetchResponse(getCurrentFolder)
 
     return { ...files, currentFolder }
+  } catch (error) {
+    throw new Error(error)
+  }
+}
+
+async function getFile({ googleToken, googleFileId }) {
+  try {
+    const getFileData = await fetchWrapper({
+      url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFileId}`,
+      params: {
+        fields: '*',
+        key: process.env.GOOGLE_API_KEY
+      },
+      headers: {
+        method: 'GET',
+        headers: {
+          'Content-Type': 'application/json',
+          Authorization: `Bearer ${googleToken}`
+        }
+      }
+    })
+
+    const file = await handleFetchResponse(getFileData)
+    let html = null
+
+    // get html
+    if (isFileType({ file, ...fileCanBeExportedToHtml })) {
+      const getHtml = await fetchWrapper({
+        url: `https://docs.google.com/feeds/download/documents/export/Export?id=${googleFileId}&exportFormat=html`,
+        // url: `docs.google.com/document/${googleFileId}/export?format=html`,
+        params: {
+          key: process.env.GOOGLE_API_KEY
+        }
+      })
+      const roughHtml = await handleFetchResponse(getHtml, 'html')
+      html = sanitizeFile(roughHtml)
+    }
+
+    return { ...file, html }
   } catch (error) {
     throw new Error(error)
   }
@@ -158,6 +203,7 @@ async function createFolder({
 
 module.exports = {
   getFolder,
+  getFile,
   getFolderPermissions,
   changeFolderPermissions,
   createFolder

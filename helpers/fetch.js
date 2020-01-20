@@ -3,7 +3,7 @@ const fetch = require('isomorphic-unfetch')
 const omitBy = require('lodash/omitBy')
 const isNil = require('lodash/isNil')
 
-async function fetchWrapper ({ url, params, headers }) {
+async function fetchWrapper({ url, params, headers }) {
   const newUrl = new URL(url)
 
   if (params) {
@@ -16,7 +16,7 @@ async function fetchWrapper ({ url, params, headers }) {
   return fetch(newUrl.href, headers)
 }
 
-async function handleFetchResponse (response) {
+async function handleFetchResponse(response, format) {
   const res = await response
 
   if (!res.ok) {
@@ -27,6 +27,9 @@ async function handleFetchResponse (response) {
 
     throw new Error(err)
   } else {
+    if (format === 'html') {
+      return response.text()
+    }
     return response.json()
   }
 }
