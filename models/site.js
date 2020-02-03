@@ -1,4 +1,4 @@
-const mongoose = require("mongoose");
+const mongoose = require('mongoose')
 
 const SiteSchema = mongoose.Schema(
   {
@@ -7,6 +7,11 @@ const SiteSchema = mongoose.Schema(
       min: 6,
       max: 140,
       required: true
+    },
+    // TODO: add requires and min and max lenght for longName and description
+    longName: {
+      type: String,
+      required: false
     },
     description: {
       type: String,
@@ -22,6 +27,6 @@ const SiteSchema = mongoose.Schema(
     }
   },
   { timestamps: true }
-);
+)
 
-module.exports = mongoose.model("Sites", SiteSchema);
+module.exports = mongoose.model('Sites', SiteSchema)

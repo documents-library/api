@@ -115,9 +115,9 @@ function sanitizeFile(html) {
     ],
     allowedAttributes: {
       a: ['href', 'name', 'target'],
-      p: ['style', 'class'],
+      p: ['style'],
       span: ['style', 'class'],
-      img: ['style', 'class', 'src']
+      img: ['style', 'src']
     },
     nonTextTags: ['style', 'script', 'textarea', 'noscript'],
     allowedStyles: {
@@ -130,9 +130,7 @@ function sanitizeFile(html) {
         'text-align': [/^left$/, /^right$/, /^center$/],
         // Match any number with px, em, or %
         'font-size': [/^\d+(?:px|em|%)$/],
-        'font-weight': [/^bold/, /^bolder/, /^lighter/, /^\d+$/],
-        width: [/^\d+(\.\d{1,2})+(?:px|em|%)$/],
-        height: [/^\d+(\.\d{1,2})+(?:px|em|%)$/]
+        'font-weight': [/^bold/, /^bolder/, /^lighter/, /^\d+$/]
       }
     },
     allowedSchemes: ['http', 'https', 'mailto']
