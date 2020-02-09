@@ -117,7 +117,9 @@ function sanitizeFile(html) {
       a: ['href', 'name', 'target'],
       p: ['style'],
       span: ['style', 'class'],
-      img: ['style', 'src']
+      img: ['style', 'src'],
+      th: ['rowspan', 'colspan'],
+      td: ['rowspan', 'colspan']
     },
     nonTextTags: ['style', 'script', 'textarea', 'noscript'],
     allowedStyles: {
