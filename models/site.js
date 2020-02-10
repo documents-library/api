@@ -5,17 +5,19 @@ const SiteSchema = mongoose.Schema(
     name: {
       type: String,
       min: 6,
+      max: 70,
+      required: true
+    },
+    // TODO: New
+    longName: {
+      type: String,
+      min: 6,
       max: 140,
       required: true
     },
-    // TODO: add requires and min and max lenght for longName and description
-    longName: {
-      type: String,
-      required: false
-    },
     description: {
       type: String,
-      required: false
+      required: true
     },
     owner: {
       type: String,

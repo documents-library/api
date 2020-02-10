@@ -21,6 +21,7 @@ app.use('/folders', foldersRoute)
 app.use('/files', filesRoute)
 
 mongoose.connect(process.env.DB_CONNECTION, { useNewUrlParser: true }, () => {
-  console.log('connected to DB')
+  console.log('✓ connected to DB')
   app.listen('8080')
+  console.log('✓ listen port 8080')
 })

@@ -6,7 +6,7 @@ const {
 } = require('../helpers/files')
 
 const GOOGLE_API_V3_BASE_PATH = 'https://www.googleapis.com/drive/v3'
-const fileItemData = [
+const FILE_ITEM_DATA = [
   'explicitlyTrashed',
   'fileExtension',
   'iconLink',
@@ -46,7 +46,7 @@ async function getFolder({
         pageToken,
         pageSize,
         orderBy,
-        fields: `kind, nextPageToken, incompleteSearch, files(${fileItemData.toString()})`,
+        fields: `kind, nextPageToken, incompleteSearch, files(${FILE_ITEM_DATA.toString()})`,
         // fields: '*',
         key: process.env.GOOGLE_API_KEY
       }

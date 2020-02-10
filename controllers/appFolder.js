@@ -1,11 +1,14 @@
 const User = require('../models/user')
 const { createFolder, getFolder } = require('../controllers/googleDrive')
 
-async function getAppFolder ({ user, googleToken }) {
+async function getAppFolder({ user, googleToken }) {
   // Check if is the first site created by the user
   if (user.appFolder) {
     // Check if the folder exists currently on the google drive of the user
-    const googleAppFolder = await getFolder({ googleFolderId: user.appFolder })
+    const googleAppFolder = await getFolder({
+      googleFolderId: user.appFolder,
+      googleToken
+    })
     if (googleAppFolder.kind) {
       return user.appFolder
     } else {
@@ -20,7 +23,7 @@ async function getAppFolder ({ user, googleToken }) {
   }
 }
 
-async function createAppFolder ({ user, googleToken }) {
+async function createAppFolder({ user, googleToken }) {
   // create folder on google drive
   const appFolder = await createFolder({
     googleToken,

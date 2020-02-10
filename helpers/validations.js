@@ -2,27 +2,32 @@ const Joi = require('@hapi/joi')
 
 const Site = require('../models/site')
 
-async function validateSite (req) {
+async function validateSite(req) {
   const data = {
     owner: req.userId,
     name: req.body.name,
+    longName: req.body.longName,
     description: req.body.description
   }
+
+  // TODO: validate siteName unique
+  // in the future: unique by organization
 
   // check schema
   const schema = {
     owner: Joi.string().required(),
     name: Joi.string()
-      .regex(/(?!.*[.\-_]{2,})^[a-z0-9.\-_]{3,32}$/)
+      .regex(/(?!.*[.\-_]{2,})^[a-z0-9.\-_]{2,32}$/)
       .required(),
-    description: Joi.string()
+    longName: Joi.string().required(),
+    description: Joi.string().required()
   }
   const { error } = Joi.validate(data, schema)
 
   if (error) {
     if (error.details[0].type === 'string.regex.base') {
       return {
-        error: `Sorry, only letters (a-z), numbers (0-9),
+        error: `Sorry, the name only accepts letters (a-z), numbers (0-9),
         and symbols (_-.) are allowed, from 3 to 32 charadcters.`
       }
     } else {
