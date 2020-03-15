@@ -76,7 +76,7 @@ async function getFolder({
   }
 }
 
-async function getFile({ googleToken, googleFileId }) {
+async function getFile({ googleFileId }) {
   try {
     const getFileData = await fetchWrapper({
       url: `${GOOGLE_API_V3_BASE_PATH}/files/${googleFileId}`,
@@ -87,8 +87,7 @@ async function getFile({ googleToken, googleFileId }) {
       headers: {
         method: 'GET',
         headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${googleToken}`
+          'Content-Type': 'application/json'
         }
       }
     })
