@@ -135,7 +135,18 @@ function sanitizeFile(html) {
         'font-weight': [/^bold/, /^bolder/, /^lighter/, /^\d+$/]
       }
     },
-    allowedSchemes: ['http', 'https', 'mailto']
+    allowedSchemes: ['http', 'https', 'mailto'],
+    transformTags: {
+      a: function(tagName, attribs) {
+        return {
+          tagName,
+          attribs: {
+            ...attribs,
+            href: attribs.href.replace('https://www.google.com/url?q=', '')
+          }
+        }
+      }
+    }
   })
 }
 
