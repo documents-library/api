@@ -138,12 +138,17 @@ function sanitizeFile(html) {
     allowedSchemes: ['http', 'https', 'mailto'],
     transformTags: {
       a: function(tagName, attribs) {
+        const newAttribs =
+          attribs && attribs.href
+            ? {
+                ...attribs,
+                href: attribs.href.replace('https://www.google.com/url?q=', '')
+              }
+            : attribs
+
         return {
           tagName,
-          attribs: {
-            ...attribs,
-            href: attribs.href.replace('https://www.google.com/url?q=', '')
-          }
+          attribs: newAttribs
         }
       }
     }
