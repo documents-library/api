@@ -142,7 +142,7 @@ function sanitizeFile(html) {
           attribs && attribs.href
             ? {
                 ...attribs,
-                href: attribs.href.replace('https://www.google.com/url?q=', '')
+                href: attribs.href.substring(29)
               }
             : attribs
 
