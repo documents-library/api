@@ -1,6 +1,7 @@
 const express = require('express')
 const dotenv = require('dotenv')
 const mongoose = require('mongoose')
+const cors = require('cors')
 
 const Authentication = require('./middlewares/auth')
 const sitesRoute = require('./routes/sites')
@@ -8,6 +9,7 @@ const foldersRoute = require('./routes/folders')
 const filesRoute = require('./routes/files')
 
 const app = express()
+app.use(cors())
 
 dotenv.config()
 
